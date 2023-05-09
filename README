@@ -1,0 +1,66 @@
+Nume: Dragan Dragos Ovidiu
+Grupă: 313CA
+
+Load Balancer; Tema 2
+
+Descriere:
+
+In server.c am creat la inceput cateva functii de care ma voi folosi de ele pe parcursul codului:
+
+-ll_create care imi creaza o lista
+-ll_remove_nth_node care imi scoateun nod de pe o anumita pozitie
+-ll_add_nth_node care imi adauga  un nod pe o anumita pozitie
+--ll_free care imi elibereaza o lista
+
+Functiile pe care le am implementat sunt urmatoarele:
+
+init_server_memory care imi initialieaza un server (hastable);
+
+server_store care imi stocheaza o cheie si valoarea acesteia in serverul dat ca parametru. In cazul in care cheia a mai fost deja adaugata doar ii actualizeaza valoarea, iar in caz contrar o adauga ca o cheie noua in serverul meu de tip hastable;
+
+server_retrieve returneaza valoarea cheii date ca parametru 
+
+server_remove sterge nodul, care contine cheia data ca parametru, din buckets si din hastable, iar la final elibereaza memoria;
+
+free_server_memory elibereaza memoria unui intreg server dat ca parametru.
+
+
+In load_balancer.c am creat urmatoarelee structri:
+
+-structura load_balancer contine un camp cu un vector de pointeri catre structura servere si size ul vectorului meu de servere.  
+- structura servere contine un camp ce pointeaza catre un server, hashul si id ul serverului respectiv.
+
+init_load_balancer imi initializeaza "cercul" care va contine serverele si cheile acestora; am alocat dinamic vectorul meu de servere si structura.
+
+functiile introducere_mijloc, introducere_final_inceput imi introduc un server cu hash ul lui la locul potrivit.
+
+loader_add_server adauga un server. In cazul in care introduc pentru prima data in vector, un server, am un caz tratat special. Pentru k == 0 introduc serverul original, iar in k == 1 si k == 2 replicile acestuia. Pentru inceput am verificat daca serverul este introdus la mijlocul vectorului. In caz contrar, am verificat daca trebuie adaugat la inceput sau la mijloc si la final am alocat cheile.
+
+realocare_chei cauta toate cheile din serverul "index" si le muta in serverul "index_curent", avand anumite conditii in functie de serverele intre care se face transferul.
+
+functia verficare_server returneaza indexul serverului.
+
+loader_remove_server sterge un server si replicile acestuia. Pentru fiecare server care urmeaza sa fie sters ii aloc cheile urmatorului server. La final dealoc serverul si realoc vectorul de servere.
+
+loader_store stocheaza o cheie si valoarea acesteia pe un server.
+
+loader_retrieve returneaza valoarea cheii date ca parametru.
+
+free_load_balancer elibereaza intreaga memorie alocata dinamic.
+
+
+### Comentarii asupra temei:
+
+* Crezi că ai fi putut realiza o implementare mai bună?
+  Din punct de vedere al eficientei nu m am gandit la o implementare mai buna, in schimb, din punct de vedere al aspectului, poate ar fi fost mai usor de vizualizat codul creandu mi inca un header cu functiile pentru liste.
+  
+  
+* Ce ai invățat din realizarea acestei teme?
+-  Am inteles mai bine conceptul de hastable.
+-  M am mai familiarizat cu structurile si crearea acestora in functie de ce date am nevoie sa mi retina.
+
+* Alte comentarii
+
+### (Opțional) Resurse / Bibliografie:
+
+
