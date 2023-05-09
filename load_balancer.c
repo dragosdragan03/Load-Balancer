@@ -38,10 +38,8 @@ unsigned int hash_function_key(void *a)
 	return hash;
 }
 
-// fac lista cu serverele;
 load_balancer *init_load_balancer()
 {
-
 	load_balancer *circle;
 	circle = malloc(sizeof(load_balancer));
 	circle->size = 0;
@@ -50,11 +48,14 @@ load_balancer *init_load_balancer()
 	return circle;
 }
 
-int introducere_mijloc(load_balancer *main, int server_id, unsigned int hash, int k, int *i)
+int introducere_mijloc(load_balancer *main, int server_id, unsigned int hash
+	, int k, int *i)
 {
-	for (*i = 0; *i < main->size - 1; (*i)++) { // se afla la mijloc
-		if (main->vector_servere[*i]->server_hash < hash && hash < main->vector_servere[(*i) + 1]->server_hash) {
-			for (int j = main->size; j >= (*i) + 1; j--) {// translatez toti vectorii o pozitie mai la dreapta
+	for (*i = 0; *i < main->size - 1; (*i)++) {  // se afla la mijloc
+		if (main->vector_servere[*i]->server_hash < hash &&
+			hash < main->vector_servere[(*i) + 1]->server_hash) {
+			// translatez toti vectorii o pozitie mai la dreapta
+			for (int j = main->size; j >= (*i) + 1; j--) {
 				main->vector_servere[j] = main->vector_servere[j - 1];
 			}
 			main->vector_servere[(*i) + 1] = malloc(sizeof(servere));
@@ -68,66 +69,53 @@ int introducere_mijloc(load_balancer *main, int server_id, unsigned int hash, in
 	return 0;
 }
 
-void realocare_chei(load_balancer *main, int index, int index_curent, unsigned int hash)
+void realocare_chei(load_balancer *main, int index, int index_curent
+	, unsigned int hash)
 {
-	// hash = hashul serverului meu in care bag
 	unsigned int i, j;
-	// if (main->vector_servere[index]->ID == 41469) {
-	// 	for (int i = 0; i < main->vector_servere[index]->data->hmax; i++) {
-	// 		linked_list_t *list = main->vector_servere[index]->data->buckets[i];
-	// 		ll_node_t *curr = list->head;
-	// 		for (j = 0; j < list->size; j++) {
-	// 			printf("%s\n", (char *)((info *)curr->data)->value);
-	// 		}
-	// 	}
-	// }
-	for (i = 0; i < main->vector_servere[index]->data->hmax; i++) { //parcurg tot hastable ul meu
-		if (main->vector_servere[index]->data->buckets[i]->head) { // daca headul meu este diferit de NULL
-			ll_node_t *curr = main->vector_servere[index]->data->buckets[i]->head; // parcurg toata lista mea de noduri
-			for (j = 0; j < main->vector_servere[index]->data->buckets[i]->size; j++) { // parcurg fiecare cheie din lista de bucketuri
-				unsigned int key_hash = hash_function_key(((info *)curr->data)->key);
-				ll_node_t *aux = curr->next;
-				if (index == 0 && index_curent == main->size - 1) { // daca bag in ultimul si caut in primul
-					if (key_hash < hash && key_hash > main->vector_servere[main->size - 2]->server_hash) {
-						// if (main->vector_servere[index_curent]->ID == 30986)
-						// 	printf("\n\nplus %s realoc1\n\n", (char *)((info *)curr->data)->value);
-						// if (main->vector_servere[index]->ID == 30986)
-						// 	printf("\n\nminus %s\n\n", (char *)((info *)curr->data)->value);
-						server_store(main->vector_servere[index_curent]->data, ((info *)curr->data)->key, ((info *)curr->data)->value);
-						server_remove(main->vector_servere[index]->data, ((info *)curr->data)->key);
-					}
-					continue;
+	// parcurg tot hastable ul meu
+	for (i = 0; i < main->vector_servere[index]->data->hmax; i++) {
+		ll_node_t *curr = main->vector_servere[index]->data->buckets[i]->head;
+		
+		// parcurg fiecare cheie din lista de bucketuri
+		for (j = 0; j < main->vector_servere[index]->data->buckets[i]->size; j++) {
+			char *cheie = ((info *)curr->data)->key;
+			char *valoare = ((info *)curr->data)->value;
+			unsigned int key_hash = hash_function_key(cheie);
+			ll_node_t *aux = curr->next;
+			server_memory *server = main->vector_servere[index_curent]->data;
+			// daca bag in ultimul si caut in primul
+			if (index == 0 && index_curent == main->size - 1) {
+				if (key_hash < hash && key_hash > main->vector_servere[main->size - 2]->server_hash) {
+					server_store(server, cheie, valoare);
+					server_remove(main->vector_servere[index]->data, cheie);
 				}
-				if (index == 1 && index_curent == 0) { // daca bag inainte de primul nod si caut in primul
-					if (key_hash < hash || key_hash > main->vector_servere[main->size - 1]->server_hash) {
-						// if (main->vector_servere[index_curent]->ID == 30986)
-						// 	printf("\n\nplus %s realoc2\n\n", (char *)((info *)curr->data)->value);
-						// if (main->vector_servere[index]->ID == 30986)
-						// 	printf("\n\nminus %s\n\n", (char *)((info *)curr->data)->value);
-						server_store(main->vector_servere[index_curent]->data, ((info *)curr->data)->key, ((info *)curr->data)->value);
-						server_remove(main->vector_servere[index]->data, ((info *)curr->data)->key);
-					}
-					continue;
-				}
-
-				if (key_hash < hash) { // daca e la mijloc
-					// if (main->vector_servere[index_curent]->ID == 30986)
-					// 	printf("\n\nplus %s realoc3\n\n", (char *)((info *)curr->data)->value);
-					// if (main->vector_servere[index]->ID == 30986)
-					// 	printf("\n\nminus %s\n\n", (char *)((info *)curr->data)->value);
-					server_store(main->vector_servere[index_curent]->data, ((info *)curr->data)->key, ((info *)curr->data)->value);
-					server_remove(main->vector_servere[index]->data, ((info *)curr->data)->key);
-				}
-				curr = aux;
+				continue;
 			}
+			// daca bag inainte de primul nod si caut in primul
+			if (index == 1 && index_curent == 0) {
+				if (key_hash < hash ||
+					key_hash > main->vector_servere[main->size - 1]->server_hash) {
+					server_store(server, cheie, valoare);
+					server_remove(main->vector_servere[index]->data, cheie);
+				}
+				continue;
+			}
+
+			if (key_hash < hash) { // daca e la mijloc
+				server_store(server, cheie, valoare);
+				server_remove(main->vector_servere[index]->data, cheie);
+			}
+			curr = aux;
 		}
 	}
 }
 
-void introducere_final_inceput(load_balancer *main, int server_id, unsigned int hash, int k)
+void introducere_final_inceput(load_balancer *main, int server_id
+	, unsigned int hash, int k)
 {
-	//printf("%d\n%d\n%d\n\n", hash, main->vector_servere[0]->server_hash, main->vector_servere[main->size - 1]->server_hash);
-	if (hash < main->vector_servere[0]->server_hash) { // inserez pe prima pozitie
+	// inserez pe prima pozitie
+	if (hash < main->vector_servere[0]->server_hash) {
 		for (int j = main->size; j > 0; j--)
 			main->vector_servere[j] = main->vector_servere[j - 1];
 
@@ -137,7 +125,8 @@ void introducere_final_inceput(load_balancer *main, int server_id, unsigned int 
 		main->vector_servere[0]->server_hash = hash;
 		main->size++;
 		realocare_chei(main, 1, 0, hash);
-	} else if (hash > main->vector_servere[main->size - 1]->server_hash) { // e pe ultima pozitie
+		// e pe ultima pozitie
+	} else if (hash > main->vector_servere[main->size - 1]->server_hash) {
 		main->vector_servere[main->size] = malloc(sizeof(servere));
 		main->vector_servere[main->size]->data = init_server_memory();
 		main->vector_servere[main->size]->ID = 100000 * k + server_id;
@@ -150,24 +139,24 @@ void introducere_final_inceput(load_balancer *main, int server_id, unsigned int 
 void loader_add_server(load_balancer *main, int server_id)
 {
 	unsigned int hash = server_id;
-	hash = hash_function_servers(&hash); // hashul serverului
+	hash = hash_function_servers(&hash);  // hashul serverului
 	int k = 0;
-	main->vector_servere = realloc(main->vector_servere, (main->size + 3) * sizeof(servere));
+	main->vector_servere = realloc(main->vector_servere,
+		(main->size + 3) * sizeof(servere));
 
-	if (main->size == 0) { // vectorul meu este gol
+	if (main->size == 0) {  // vectorul meu este gol
 		main->vector_servere[0] = malloc(sizeof(servere));
 		main->vector_servere[0]->data = init_server_memory();
 		main->vector_servere[0]->ID = server_id;
 		main->vector_servere[0]->server_hash = hash;
 		main->size++;
 		k = 1;
-		//printf("%d\n\n\n%d\n\n", main->vector_servere[0]->server_hash, server_id);
 	}
 	int i = 0;
-	if (k == 0) {// daca e prima oara cand ii fac hashul si sa vad unde l bag
+	if (k == 0) {  // serverul original
 		int ok = introducere_mijloc(main, server_id, hash, 0, &i);
 
-		if (ok == 0) // ori e dupa ori e inainte
+		if (ok == 0)  // ori e dupa ori e inainte
 			introducere_final_inceput(main, server_id, hash, 0);
 		else
 			realocare_chei(main, i + 2, i + 1, hash);
@@ -176,11 +165,11 @@ void loader_add_server(load_balancer *main, int server_id)
 	}
 
 	i = 0;
-	if (k == 1) {
+	if (k == 1) {  // prima replica
 		unsigned int replica = 100000 + server_id;
 		hash = hash_function_servers(&replica);
 		int ok = introducere_mijloc(main, server_id, hash, 1, &i);
-		//printf("%d", ok);
+
 		if (ok == 0)  // ori e dupa ori e inainte
 			introducere_final_inceput(main, server_id, hash, 1);
 		else
@@ -190,27 +179,18 @@ void loader_add_server(load_balancer *main, int server_id)
 	}
 
 	i = 0;
-	if (k == 2) {
+	if (k == 2) {  // a doua replica
 		unsigned int replica = 200000 + server_id;
 		hash = hash_function_servers(&replica);
 		int ok = introducere_mijloc(main, server_id, hash, 2, &i);
 
-		if (ok == 0) // ori e dupa ori e inainte
+		if (ok == 0)  // ori e dupa ori e inainte
 			introducere_final_inceput(main, server_id, hash, 2);
 		else
 			realocare_chei(main, i + 2, i + 1, hash);
 
 		k++;
 	}
-	// for (int i = 0; i < main->size; i++) {
-	// 	printf("%u ", main->vector_servere[i]->ID);
-	// }
-	// printf("\n");
-	// for (int i = 0; i < main->size; i++) {
-	// 	printf("%u ", main->vector_servere[i]->server_hash);
-	// }
-	// printf("\n");
-
 }
 
 int verficare_server(load_balancer *main, int server_id)
@@ -236,24 +216,23 @@ void loader_remove_server(load_balancer *main, int server_id)
 		if (index + 1 == main->size)
 			index_next = 0;
 
-		// eu am nevoie de server id ul urmatorului
-		//unsigned int hash = main->vector_servere[index_next]->server_hash;
-		// serverul care detine serverid ul
-		//realocare_chei(main, index, index_next, hash);
-		for (unsigned int i = 0; i < main->vector_servere[index]->data->hmax; i++) { //parcurg tot hastable ul meu
-			if (main->vector_servere[index]->data->buckets[i]->head) { // daca headul meu este diferit de NULL
-				ll_node_t *curr = main->vector_servere[index]->data->buckets[i]->head; // parcurg toata lista mea de noduri
-				for (unsigned int j = 0; j < main->vector_servere[index]->data->buckets[i]->size; j++) { // parcurg fiecare cheie din lista de bucketuri
-					// if (main->vector_servere[index_next]->ID == 30986)
-					// 	printf("\n\nplus %s mutare_next\n\n", (char *)((info *)curr->data)->value);
-					server_store(main->vector_servere[index_next]->data, ((info *)curr->data)->key, ((info *)curr->data)->value);
-					//server_remove(main->vector_servere[index]->data, ((info *)curr->data)->key);
+		// parcurg tot hastable ul meu
+		unsigned int hmax = main->vector_servere[index]->data->hmax;
+		for (unsigned int i = 0; i < hmax; i++) {
+			if (main->vector_servere[index]->data->buckets[i]->head) {
+				// parcurg toata lista mea de noduri
+				server_memory *server = main->vector_servere[index]->data;
+				ll_node_t *curr = server->buckets[i]->head;
+				// parcurg fiecare cheie din lista de bucketuri
+				for (unsigned int j = 0; j < server->buckets[i]->size; j++) {
+					char *cheie = ((info *)curr->data)->key;
+					char *valoare = ((info *)curr->data)->value;
+					server_store(main->vector_servere[index_next]->data,
+						cheie, valoare);
 					curr = curr->next;
 				}
 			}
 		}
-		// if (main->vector_servere[index]->ID == 30986)
-		// 	printf("\n\n0\n\n");
 		free_server_memory(main->vector_servere[index]->data);
 		free(main->vector_servere[index]);
 
@@ -262,33 +241,22 @@ void loader_remove_server(load_balancer *main, int server_id)
 
 		main->size--;
 	}
-	main->vector_servere = realloc(main->vector_servere, (main->size) * sizeof(servere));
+	main->vector_servere = realloc(main->vector_servere,
+		(main->size) * sizeof(servere));
 }
 
 void loader_store(load_balancer *main, char *key, char *value, int *server_id)
 {
 	unsigned int hash_key = hash_function_key(key);
-	//	printf("    %u\n\n\n", hash_key);
-	if (hash_key > main->vector_servere[main->size - 1]->server_hash) { // e pe ultima pozitie
-		// if (strncmp(value, "Vaishali", 8) == 0) {
-		// 	printf("\n\nplus %s store1\n\n", main->vector_servere[0]->ID);
-		// }
-
-		// if (main->vector_servere[0]->ID == 30986)
-		// 	printf("\n\nplus %s store1\n\n", value);
+	// e pe ultima pozitie
+	if (hash_key > main->vector_servere[main->size - 1]->server_hash) {
 		server_store(main->vector_servere[0]->data, key, value);
 		*server_id = main->vector_servere[0]->ID % 100000;
-		//	printf("%d", main->vector_servere[0]->ID);
 		return;
 	}
 
 	for (int i = 0; i < main->size; i++) {
 		if (main->vector_servere[i]->server_hash > hash_key) {
-			// if (strncmp(value, "Vaishali", 8) == 0) {
-			// 	printf("\n\nplus %s store2\n\n", main->vector_servere[i]->ID);
-			// }
-			// if (main->vector_servere[i]->ID == 30986)
-			// 	printf("\n\nplus %s store2\n\n", value);
 			server_store(main->vector_servere[i]->data, key, value);
 			*server_id = main->vector_servere[i]->ID % 100000;
 			return;
@@ -299,10 +267,11 @@ void loader_store(load_balancer *main, char *key, char *value, int *server_id)
 // intoarce serverul in care exista cheia
 char *loader_retrieve(load_balancer *main, char *key, int *server_id)
 {
-	unsigned int hash_key = hash_function_key(key); // sa vad unde se afla cheia mea
+	unsigned int hash_key = hash_function_key(key);
 
 	for (int i = 0; i < main->size - 1; i++) {
-		if (main->vector_servere[i]->server_hash < hash_key && hash_key < main->vector_servere[i + 1]->server_hash) {
+		if (main->vector_servere[i]->server_hash < hash_key &&
+			hash_key < main->vector_servere[i + 1]->server_hash) {
 			char *value = server_retrieve(main->vector_servere[i + 1]->data, key);
 			if (value) {
 				*server_id = main->vector_servere[i + 1]->ID % 100000;
@@ -310,14 +279,15 @@ char *loader_retrieve(load_balancer *main, char *key, int *server_id)
 			} else return NULL;
 		}
 	}
-	// ori e dupa ori e inainte
-	if (hash_key < main->vector_servere[0]->server_hash) { // cheia se afla inainte primului sensor
+	// cheia se afla inainte primului sensor
+	if (hash_key < main->vector_servere[0]->server_hash) {
 		char *value = server_retrieve(main->vector_servere[0]->data, key);
 		if (value) {
 			*server_id = main->vector_servere[0]->ID % 100000;
 			return value;
 		} else return NULL;
-	} else if (hash_key > main->vector_servere[main->size - 1]->server_hash) { // e dupa ultima pozitie
+		// e dupa ultima pozitie
+	} else if (hash_key > main->vector_servere[main->size - 1]->server_hash) {
 		char *value = server_retrieve(main->vector_servere[0]->data, key);
 		if (value) {
 			*server_id = main->vector_servere[0]->ID % 100000;
@@ -331,7 +301,6 @@ char *loader_retrieve(load_balancer *main, char *key, int *server_id)
 void free_load_balancer(load_balancer *main)
 {
 	for (int i = 0; i < main->size; i++) {
-		//printf("%d %d\n", main->vector_servere[i]->ID, main->vector_servere[i]->data->size);
 		free_server_memory(main->vector_servere[i]->data);
 		free(main->vector_servere[i]);
 	}

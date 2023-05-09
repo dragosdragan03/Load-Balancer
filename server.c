@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 #include "server.h"
-//trebuie sa mi implementez functii de lista simplu inlanuite, de hash
-//
 
 unsigned int hash_function_k(void *a)
 {
@@ -30,20 +27,6 @@ linked_list_t *ll_create(unsigned int data_size)
 	return list;
 }
 
-// ll_node_t *create_node(void *new_data, int data_size) // creez un nod
-// {
-// 	// aloc diamic un nod
-// 	ll_node_t *new_node = malloc(sizeof(ll_node_t));
-
-// 	// aloca spatiu pentru tipul de data adaugat
-// 	new_node->data = malloc(data_size);
-
-// 	// copiaza in new_node, ce contine new_data cu size ul respectiv
-// 	memcpy(new_node->data, new_data, data_size);
-
-// 	return new_node;
-// }
-
 ll_node_t *ll_remove_nth_node(linked_list_t *list, unsigned int n)
 {
 	ll_node_t *prev, *curr;
@@ -52,7 +35,6 @@ ll_node_t *ll_remove_nth_node(linked_list_t *list, unsigned int n)
 		return NULL;
 	}
 
-	/* n >= list->size - 1 inseamna eliminarea nodului de la finalul listei. */
 	if (n > list->size - 1) {
 		n = list->size - 1;
 	}
@@ -66,7 +48,6 @@ ll_node_t *ll_remove_nth_node(linked_list_t *list, unsigned int n)
 	}
 
 	if (prev == NULL) {
-		/* Adica n == 0. */
 		list->head = curr->next;
 	} else {
 		prev->next = curr->next;
@@ -123,12 +104,12 @@ void ll_free(linked_list_t **pp_list)
 		ll_node_t *aux;
 		for (unsigned int i = 0; i < list->size; i++) {
 			aux = curr->next;
-			key_val_free_function(curr->data); // eliberez memoria din noduri
-			free(curr); // eliberez nodul
+			key_val_free_function(curr->data);  // eliberez memoria din noduri
+			free(curr);  // eliberez nodul
 			curr = aux;
 		}
 	}
-	free(*pp_list); // sterg lista
+	free(*pp_list);  // sterg lista
 }
 
 int compare_function_strings(void *a, void *b)
@@ -149,11 +130,10 @@ server_memory *init_server_memory()
 	server->key_val_free_function = key_val_free_function;
 	server->compare_function = compare_function_strings;
 	server->buckets = malloc(server->hmax * sizeof(linked_list_t *));
-	for (int i = 0; i < server->hmax; i++)
+	for (unsigned int i = 0; i < server->hmax; i++)
 		server->buckets[i] = ll_create(sizeof(info));
 
 	return server;
-
 }
 
 // o sa primesc memoria unui server (ex: key, value)
@@ -162,14 +142,10 @@ void server_store(server_memory *server, char *key, char *value)
 	unsigned int hash = server->hash_function(key);
 	int index = hash % server->hmax;
 	ll_node_t *curr = server->buckets[index]->head;
-	// if (!strncmp(value, "Vaishali Bindi and Bangles Brass, Copper Bangle Set", sizeof("Vaishali Bindi and Bangles Brass, Copper Bangle Set"))) {
-	// 	printf("************\n%d\n*****************", index);
-	// }
-	if (server_retrieve(server, key)) { // daca exista cheia
+
+	if (server_retrieve(server, key)) {  // daca exista cheia
 		for (unsigned int i = 0; i < server->buckets[index]->size; i++) {
 			if (!server->compare_function(key, ((info *)curr->data)->key)) {
-				//printf("%s", (char *)((info *)curr->data)->key);
-				//printf("\n\n\n\n*************************************\n\n\n");
 				break;
 			}
 			curr = curr->next;
@@ -182,49 +158,37 @@ void server_store(server_memory *server, char *key, char *value)
 		memcpy(cop->key, key, 128);
 		memcpy(cop->value, value, 65536);
 		ll_add_nth_node(server->buckets[index], server->buckets[index]->size, cop);
-		// if (!strncmp(value, "Vaishali Bindi and Bangles Brass, Copper Bangle Set", sizeof("Vaishali Bindi and Bangles Brass, Copper Bangle Set"))) {
-		// 	printf("************\n%d\n*****************", server->buckets[index]->size);
-		// 	ll_node_t *curr = server->buckets[index]->head;
-		// 	for (int i = 0; i < server->buckets[index]->size; i++) {
-		// 		printf("%s\n", (char *)((info *)curr->data)->value);
-		// 		curr = curr->next;
-		// 	}
-		// }
 		server->size++;
-		//printf("%s", (char *)cop->key);
 		free(cop);
 	}
 }
-// mi se da o cheie si eu vreau sa i aflu valoarea ei si mi returneaza valoarea
+
 char *server_retrieve(server_memory *server, char *key)
 {
 	unsigned int hash = server->hash_function(key);
 	int index = hash % server->hmax;
 	ll_node_t *curr = server->buckets[index]->head;
 	if (server->buckets[index]->size == 0) {
-		//printf("blabla1\n\n");
 		return NULL;
 	}
 
 	for (unsigned int i = 0; i < server->buckets[index]->size; i++) {
-		//printf("blabla2\n\n");
 		if (!server->compare_function(key, ((info *)curr->data)->key)) {
 			return ((info *)curr->data)->value;
-			//	printf("blabla3\n\n");
 		}
 		curr = curr->next;
 	}
 
 	return NULL;
 }
-// mi se da o cheie, trebuie sa o caut in server si i dau remove din lista cheii respective
+
 void server_remove(server_memory *server, char *key)
 {
 	unsigned int hash = server->hash_function(key);
 	int index = hash % server->hmax;
 	ll_node_t *curr = server->buckets[index]->head;
 	unsigned int i;
-	if (server_retrieve(server, key)) {// exista nodul
+	if (server_retrieve(server, key)) {  // exista nodul
 		for (i = 0; i < server->buckets[index]->size; i++) {
 			if (!server->compare_function(key, ((info *)curr->data)->key))
 				break;

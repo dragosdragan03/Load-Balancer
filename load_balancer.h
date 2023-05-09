@@ -47,7 +47,7 @@ void loader_store(load_balancer *main, char *key, char *value, int *server_id);
  * @arg1: Load balancer which distributes the work.
  * @arg2: Key represented as a string.
  * @arg3: This function will RETURN the server ID
-          which stores the value via this parameter.
+		  which stores the value via this parameter.
  *
  * The load balancer will search for the server which should posess the
  * value associated to the key. The server will return NULL in case
