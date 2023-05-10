@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
-#include "load_balancer.h"
+#include "/home/student/Desktop/de_predat/SDA/Tema 2/Load-Balancer/load_balancer.h"
+#include "/home/student/Desktop/de_predat/SDA/Tema 2/Load-Balancer/utils.h"
 
 typedef struct servere {
 	server_memory *data;
@@ -42,8 +42,10 @@ load_balancer *init_load_balancer()
 {
 	load_balancer *circle;
 	circle = malloc(sizeof(load_balancer));
+	DIE(!circle, "Nu s-a putut aloca");
 	circle->size = 0;
 	circle->vector_servere = malloc(sizeof(servere *));
+	DIE(!circle->vector_servere, "Nu s-a putut aloca");
 
 	return circle;
 }
@@ -59,6 +61,7 @@ int introducere_mijloc(load_balancer *main, int server_id, unsigned int hash
 				main->vector_servere[j] = main->vector_servere[j - 1];
 			}
 			main->vector_servere[(*i) + 1] = malloc(sizeof(servere));
+			DIE(!main->vector_servere[(*i) + 1], "Nu s-a putut aloca");
 			main->vector_servere[(*i) + 1]->data = init_server_memory();
 			main->vector_servere[(*i) + 1]->ID = 100000 * k + server_id;
 			main->vector_servere[(*i) + 1]->server_hash = hash;
@@ -76,7 +79,7 @@ void realocare_chei(load_balancer *main, int index, int index_curent
 	// parcurg tot hastable ul meu
 	for (i = 0; i < main->vector_servere[index]->data->hmax; i++) {
 		ll_node_t *curr = main->vector_servere[index]->data->buckets[i]->head;
-		
+
 		// parcurg fiecare cheie din lista de bucketuri
 		for (j = 0; j < main->vector_servere[index]->data->buckets[i]->size; j++) {
 			char *cheie = ((info *)curr->data)->key;
@@ -84,25 +87,26 @@ void realocare_chei(load_balancer *main, int index, int index_curent
 			unsigned int key_hash = hash_function_key(cheie);
 			ll_node_t *aux = curr->next;
 			server_memory *server = main->vector_servere[index_curent]->data;
+			servere **vector = main->vector_servere;
 			// daca bag in ultimul si caut in primul
 			if (index == 0 && index_curent == main->size - 1) {
-				if (key_hash < hash && key_hash > main->vector_servere[main->size - 2]->server_hash) {
+				if (key_hash < hash && key_hash > vector[main->size - 2]->server_hash) {
 					server_store(server, cheie, valoare);
-					server_remove(main->vector_servere[index]->data, cheie);
+					server_remove(vector[index]->data, cheie);
 				}
 				continue;
 			}
 			// daca bag inainte de primul nod si caut in primul
 			if (index == 1 && index_curent == 0) {
 				if (key_hash < hash ||
-					key_hash > main->vector_servere[main->size - 1]->server_hash) {
+					key_hash > vector[main->size - 1]->server_hash) {
 					server_store(server, cheie, valoare);
-					server_remove(main->vector_servere[index]->data, cheie);
+					server_remove(vector[index]->data, cheie);
 				}
 				continue;
 			}
 
-			if (key_hash < hash) { // daca e la mijloc
+			if (key_hash < hash) {  // daca e la mijloc
 				server_store(server, cheie, valoare);
 				server_remove(main->vector_servere[index]->data, cheie);
 			}
@@ -120,6 +124,7 @@ void introducere_final_inceput(load_balancer *main, int server_id
 			main->vector_servere[j] = main->vector_servere[j - 1];
 
 		main->vector_servere[0] = malloc(sizeof(servere));
+		DIE(!main->vector_servere[0], "Nu s-a putut aloca");
 		main->vector_servere[0]->data = init_server_memory();
 		main->vector_servere[0]->ID = 100000 * k + server_id;
 		main->vector_servere[0]->server_hash = hash;
@@ -128,6 +133,7 @@ void introducere_final_inceput(load_balancer *main, int server_id
 		// e pe ultima pozitie
 	} else if (hash > main->vector_servere[main->size - 1]->server_hash) {
 		main->vector_servere[main->size] = malloc(sizeof(servere));
+		DIE(!main->vector_servere[main->size], "Nu s-a putut aloca");
 		main->vector_servere[main->size]->data = init_server_memory();
 		main->vector_servere[main->size]->ID = 100000 * k + server_id;
 		main->vector_servere[main->size]->server_hash = hash;
@@ -143,9 +149,11 @@ void loader_add_server(load_balancer *main, int server_id)
 	int k = 0;
 	main->vector_servere = realloc(main->vector_servere,
 		(main->size + 3) * sizeof(servere));
+	DIE(!main->vector_servere, "Nu s-a putut aloca");
 
 	if (main->size == 0) {  // vectorul meu este gol
 		main->vector_servere[0] = malloc(sizeof(servere));
+		DIE(!main->vector_servere[0], "Nu s-a putut aloca");
 		main->vector_servere[0]->data = init_server_memory();
 		main->vector_servere[0]->ID = server_id;
 		main->vector_servere[0]->server_hash = hash;
@@ -201,7 +209,7 @@ int verficare_server(load_balancer *main, int server_id)
 		if (main->vector_servere[i]->server_hash == hash)
 			return i;
 
-	printf("Nu a mers");
+	printf("Nu s-a gasit");
 	return -1;
 }
 
@@ -276,7 +284,9 @@ char *loader_retrieve(load_balancer *main, char *key, int *server_id)
 			if (value) {
 				*server_id = main->vector_servere[i + 1]->ID % 100000;
 				return value;
-			} else return NULL;
+			} else {
+				return NULL;
+			}
 		}
 	}
 	// cheia se afla inainte primului sensor
@@ -285,14 +295,20 @@ char *loader_retrieve(load_balancer *main, char *key, int *server_id)
 		if (value) {
 			*server_id = main->vector_servere[0]->ID % 100000;
 			return value;
-		} else return NULL;
+		} else {
+			return NULL;
+		}
 		// e dupa ultima pozitie
-	} else if (hash_key > main->vector_servere[main->size - 1]->server_hash) {
-		char *value = server_retrieve(main->vector_servere[0]->data, key);
-		if (value) {
-			*server_id = main->vector_servere[0]->ID % 100000;
-			return value;
-		} else return NULL;
+	} else {
+		if (hash_key > main->vector_servere[main->size - 1]->server_hash) {
+			char *value = server_retrieve(main->vector_servere[0]->data, key);
+			if (value) {
+				*server_id = main->vector_servere[0]->ID % 100000;
+				return value;
+			} else {
+				return NULL;
+			}
+		}
 	}
 
 	return NULL;

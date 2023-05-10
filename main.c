@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "load_balancer.h"
-#include "utils.h"
+#include "/home/student/Desktop/de_predat/SDA/Tema 2/Load-Balancer/load_balancer.h"
+#include "/home/student/Desktop/de_predat/SDA/Tema 2/Load-Balancer/utils.h"
 
 #define REQUEST_LENGTH 1024
 #define KEY_LENGTH 128

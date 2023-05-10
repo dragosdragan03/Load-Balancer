@@ -1,8 +1,7 @@
 /* Copyright 2023 <> */
 #ifndef LOAD_BALANCER_H_
 #define LOAD_BALANCER_H_
-
-#include "server.h"
+#include "/home/student/Desktop/de_predat/SDA/Tema 2/Load-Balancer/server.h"
 
 struct load_balancer;
 typedef struct load_balancer load_balancer;

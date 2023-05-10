@@ -1,6 +1,9 @@
 {
-	"files.associations": {
-		"stdio.h": "c",
-		"stdlib.h": "c"
-	}
+  "files.associations": {
+    "stdio.h": "c",
+    "stdlib.h": "c",
+    "load_balancer.h": "c",
+    "utils.h": "c",
+    "server.h": "c"
+  }
 }

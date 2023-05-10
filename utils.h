@@ -1,4 +1,4 @@
-/* Copyright 2023 <> */
+/* Copyright 2023 <Dragan Dragos Ovidiu> */
 #ifndef UTILS_H_
 #define UTILS_H_
 
