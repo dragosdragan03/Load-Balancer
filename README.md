@@ -1,4 +1,4 @@
-# Load Balancer - Tema 2
+# Load Balancer
 
 **Author**: Dragan Dragos Ovidiu  
 **Group**: 313CA  
@@ -62,8 +62,6 @@ The `load_balancer.c` file manages the load balancer and servers within a circul
 - **`free_load_balancer`**: Frees all dynamically allocated memory used by the load balancer and its servers.
 
 ## Compilation and Execution
-
-1. **Compile the Project**: Ensure that all files are compiled together, linking the necessary headers.
 
    ```bash
    gcc -o load_balancer server.c load_balancer.c -I/path/to/headers
